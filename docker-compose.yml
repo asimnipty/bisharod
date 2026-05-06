@@ -1,0 +1,111 @@
+version: '3.9'
+
+services:
+
+  # ── HAPI FHIR Server ────────────────────────────────────────────────────────
+  fhir-server:
+    image: hapiproject/hapi:v7.4.0
+    container_name: bisharod-fhir
+    ports:
+      - "8080:8080"
+    environment:
+      hapi.fhir.fhir_version: R4
+      hapi.fhir.allow_multiple_delete: "true"
+      hapi.fhir.reuse_cached_search_results_millis: "10000"
+      spring.datasource.url: jdbc:postgresql://postgres:5432/hapi
+      spring.datasource.username: hapi
+      spring.datasource.password: hapi
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/fhir/metadata"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ── CQL Translation Service ─────────────────────────────────────────────────
+  cql-service:
+    image: alphora/cql-services:latest
+    container_name: bisharod-cql
+    ports:
+      - "8090:8080"
+
+  # ── PostgreSQL (metadata DB) ────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: bisharod-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: hapi
+      POSTGRES_PASSWORD: hapi
+      POSTGRES_DB: hapi
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # ── Redis (BullMQ) ──────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: bisharod-redis
+    ports:
+      - "6379:6379"
+
+  # ── Keycloak (SMART on FHIR auth server) ───────────────────────────────────
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: bisharod-auth
+    command: start-dev
+    ports:
+      - "8180:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: hapi
+      KC_DB_PASSWORD: hapi
+    depends_on:
+      - postgres
+
+  # ── Backend API ─────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: bisharod-api
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      FHIR_BASE_URL: http://fhir-server:8080/fhir
+      FHIR_SERVICE_TOKEN: dev-service-token
+      CQL_TRANSLATION_SERVICE_URL: http://cql-service:8080
+      JWKS_URI: http://keycloak:8080/realms/bisharod/protocol/openid-connect/certs
+      JWT_AUDIENCE: bisharod-api
+      DATABASE_URL: postgresql://hapi:hapi@postgres:5432/bisharod
+      REDIS_URL: redis://redis:6379
+      CORS_ORIGINS: http://localhost:5173
+    volumes:
+      - ./backend/src:/app/src    # hot-reload
+    depends_on:
+      - fhir-server
+      - postgres
+      - redis
+      - keycloak
+
+  # ── Frontend (dev server) ───────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: bisharod-ui
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: http://localhost:4000
+    volumes:
+      - ./frontend/src:/app/src
+
+volumes:
+  pgdata:
