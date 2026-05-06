@@ -1,4 +1,4 @@
-# Dependencies
+# Dependencies - ignore node_modules but KEEP package-lock.json
 node_modules/
 .npm
 
@@ -7,7 +7,7 @@ dist/
 build/
 .vite/
 
-# Environment files
+# Environment files - keep .env.example, ignore actual .env
 .env
 .env.local
 .env.*.local
