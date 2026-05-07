@@ -1,15 +1,15 @@
-import { Routes, Route } from 'react-router-dom'
-import { MainLayout } from './components/layout/MainLayout'
-import { ProtectedRoute } from './components/layout/ProtectedRoute'
-import { HomePage } from './pages/HomePage'
-import { ServicesPage } from './pages/ServicesPage'
-import { LoginPage } from './pages/LoginPage'
-import { PortalPage } from './pages/PortalPage'
-import { CQLPage } from './pages/CQLPage'
-import { CareGapPage } from './pages/CareGapPage'
-import { MeasuresPage } from './pages/MeasuresPage'
-import { PriorAuthPage } from './pages/PriorAuthPage'
-import { NotFoundPage } from './pages/NotFoundPage'
+import { Routes, Route } from "react-router-dom";
+import { MainLayout } from "./components/layout/MainLayout";
+import { ProtectedRoute } from "./components/layout/ProtectedRoute";
+import { HomePage } from "./pages/HomePage";
+import { ServicesPage } from "./pages/ServicesPage";
+import { LoginPage } from "./pages/LoginPage";
+import { PortalPage } from "./pages/PortalPage";
+import { CQLPage } from "./pages/CQLPage";
+import { CareGapPage } from "./pages/CareGapPage";
+import { MeasuresPage } from "./pages/MeasuresPage";
+import { PriorAuthPage } from "./pages/PriorAuthPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 export default function App() {
   return (
@@ -32,5 +32,5 @@ export default function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
-  )
+  );
 }
