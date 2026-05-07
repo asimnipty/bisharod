@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/bisharod/public_html
+    - /bin/cp -rf $TRAVIS_BUILD_DIR/frontend/dist/* $DEPLOYPATH/

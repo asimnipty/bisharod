@@ -1,29 +1,27 @@
-import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, LayoutDashboard } from "lucide-react";
-import { useAuthStore } from "@/store/authStore";
+import { useState } from 'react'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Menu, X, LogOut, LayoutDashboard } from 'lucide-react'
+import { useAuthStore } from '@/store/authStore'
 
 export function Navbar() {
-  const [open, setOpen] = useState(false);
-  const { user, logout } = useAuthStore();
-  const navigate = useNavigate();
+  const [open, setOpen] = useState(false)
+  const { user, logout } = useAuthStore()
+  const navigate = useNavigate()
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
+  const handleLogout = () => { logout(); navigate('/') }
 
   const navLinks = [
-    { to: "/", label: "Home" },
-    { to: "/services", label: "Services" },
-  ];
+    { to: '/', label: 'Home' },
+    { to: '/services', label: 'Services' },
+  ]
 
   return (
     <nav className="fixed top-0 inset-x-0 z-50 bg-bisharod-navy/95 backdrop-blur border-b border-bisharod-teal/20">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <img src="logo.png" alt="Bisharod" className="h-9 w-auto" />
+          <img src="/logo.png" alt="Bisharod" className="h-9 w-auto" />
         </Link>
 
         {/* Desktop nav */}
@@ -32,12 +30,12 @@ export function Navbar() {
             <NavLink
               key={to}
               to={to}
-              end={to === "/"}
+              end={to === '/'}
               className={({ isActive }) =>
                 `text-sm font-medium tracking-wide transition-colors ${
                   isActive
-                    ? "text-bisharod-teal-light"
-                    : "text-white/60 hover:text-white"
+                    ? 'text-bisharod-teal-light'
+                    : 'text-white/60 hover:text-white'
                 }`
               }
             >
@@ -88,37 +86,20 @@ export function Navbar() {
       {open && (
         <div className="md:hidden bg-bisharod-navy border-t border-white/10 px-6 py-4 flex flex-col gap-4">
           {navLinks.map(({ to, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === "/"}
-              onClick={() => setOpen(false)}
+            <NavLink key={to} to={to} end={to === '/'} onClick={() => setOpen(false)}
               className={({ isActive }) =>
-                `text-sm font-medium ${isActive ? "text-bisharod-teal-light" : "text-white/70"}`
+                `text-sm font-medium ${isActive ? 'text-bisharod-teal-light' : 'text-white/70'}`
               }
             >
               {label}
             </NavLink>
           ))}
-          {user ? (
-            <Link
-              to="/portal"
-              onClick={() => setOpen(false)}
-              className="text-sm text-bisharod-teal-light"
-            >
-              Portal
-            </Link>
-          ) : (
-            <Link
-              to="/login"
-              onClick={() => setOpen(false)}
-              className="text-sm text-bisharod-teal"
-            >
-              Sign In
-            </Link>
-          )}
+          {user
+            ? <Link to="/portal" onClick={() => setOpen(false)} className="text-sm text-bisharod-teal-light">Portal</Link>
+            : <Link to="/login" onClick={() => setOpen(false)} className="text-sm text-bisharod-teal">Sign In</Link>
+          }
         </div>
       )}
     </nav>
-  );
+  )
 }

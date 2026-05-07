@@ -1,29 +1,36 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, Users, Search } from 'lucide-react'
-
-const DEMO_GAPS = [
-  { measure: 'Diabetes HbA1c Control',      topic: 'Diabetes',      denominator: 1240, gaps: 312, pct: 25.2 },
-  { measure: 'Colorectal Cancer Screening', topic: 'Preventive',    denominator: 890,  gaps: 178, pct: 20.0 },
-  { measure: 'Breast Cancer Screening',     topic: 'Preventive',    denominator: 640,  gaps: 96,  pct: 15.0 },
-  { measure: 'Blood Pressure Control',      topic: 'Cardiovascular', denominator: 2100, gaps: 630, pct: 30.0 },
-]
+import { ChevronLeft, Users, Search, Loader2 } from 'lucide-react'
+import { careGapApi } from '@/api/fhirClient'
 
 export function CareGapPage() {
-  const [ran, setRan] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [topic, setTopic] = useState('all')
+  const [periodStart, setPeriodStart] = useState('2024-01-01')
+  const [periodEnd, setPeriodEnd]     = useState('2024-12-31')
+  const [topic, setTopic]             = useState('all')
+  const [loading, setLoading]         = useState(false)
+  const [result, setResult]           = useState<any>(null)
+  const [error, setError]             = useState('')
 
   const run = async () => {
     setLoading(true)
-    await new Promise(r => setTimeout(r, 900))
+    setError('')
+    setResult(null)
+    try {
+      const data = await careGapApi.run({ periodStart, periodEnd, topic })
+      setResult(data)
+    } catch (err: any) {
+      setError(err?.response?.data?.error ?? 'Backend unreachable — is bisharod-api.onrender.com running?')
+    }
     setLoading(false)
-    setRan(true)
   }
 
-  const rows = topic === 'all'
-    ? DEMO_GAPS
-    : DEMO_GAPS.filter(r => r.topic.toLowerCase().includes(topic))
+  // Demo rows to show while backend FHIR server isn't connected
+  const DEMO = [
+    { measure: 'Diabetes HbA1c Control',      topic: 'Diabetes',       denominator: 1240, gaps: 312, pct: 25.2 },
+    { measure: 'Colorectal Cancer Screening',  topic: 'Preventive',     denominator: 890,  gaps: 178, pct: 20.0 },
+    { measure: 'Breast Cancer Screening',      topic: 'Preventive',     denominator: 640,  gaps: 96,  pct: 15.0 },
+    { measure: 'Blood Pressure Control',       topic: 'Cardiovascular', denominator: 2100, gaps: 630, pct: 30.0 },
+  ]
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-bisharod-mist">
@@ -45,22 +52,28 @@ export function CareGapPage() {
           <h1 className="font-display text-2xl text-bisharod-navy">Care Gap Analysis</h1>
         </div>
         <p className="text-bisharod-navy/50 text-sm mb-8 ml-12">
-          CQL-driven population gap identification via FHIR{' '}
-          <code className="font-mono text-bisharod-teal">$care-gaps</code>.
+          CQL-driven population gap identification via{' '}
+          <code className="font-mono text-bisharod-teal">POST /api/care-gaps</code>
+          {' → '}
+          <span className="text-bisharod-teal/70">bisharod-api.onrender.com</span>
         </p>
 
+        {/* Filters */}
         <div className="bg-white border border-gray-100 rounded-xl p-5 mb-6 flex flex-wrap gap-4 items-end">
           <div>
             <label className="block text-xs font-semibold text-bisharod-navy/50 uppercase tracking-widest mb-1.5">Period Start</label>
-            <input type="date" defaultValue="2024-01-01" className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-bisharod-teal" />
+            <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)}
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-bisharod-teal" />
           </div>
           <div>
             <label className="block text-xs font-semibold text-bisharod-navy/50 uppercase tracking-widest mb-1.5">Period End</label>
-            <input type="date" defaultValue="2024-12-31" className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-bisharod-teal" />
+            <input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)}
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-bisharod-teal" />
           </div>
           <div>
             <label className="block text-xs font-semibold text-bisharod-navy/50 uppercase tracking-widest mb-1.5">Topic</label>
-            <select value={topic} onChange={e => setTopic(e.target.value)} className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-bisharod-teal">
+            <select value={topic} onChange={e => setTopic(e.target.value)}
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-bisharod-teal">
               <option value="all">All Topics</option>
               <option value="diabetes">Diabetes</option>
               <option value="cardiovascular">Cardiovascular</option>
@@ -69,12 +82,31 @@ export function CareGapPage() {
           </div>
           <button onClick={run} disabled={loading}
             className="flex items-center gap-2 px-5 py-2 bg-bisharod-teal text-bisharod-navy font-semibold text-sm rounded-lg hover:bg-bisharod-teal-light transition-colors disabled:opacity-50">
-            <Search size={14} />
-            {loading ? 'Running…' : 'Run Analysis'}
+            {loading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
+            {loading ? 'Calling API…' : 'Run Analysis'}
           </button>
         </div>
 
-        {ran && (
+        {/* Error */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl mb-6">
+            {error}
+          </div>
+        )}
+
+        {/* API response */}
+        {result && (
+          <div className="bg-bisharod-navy text-green-300 font-mono text-xs p-4 rounded-xl mb-6">
+            <p className="text-white/40 mb-2">// Response from bisharod-api.onrender.com/api/care-gaps</p>
+            {JSON.stringify(result, null, 2)}
+          </div>
+        )}
+
+        {/* Demo data table */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-bisharod-navy/40 mb-3">
+            Sample Data — wire HAPI FHIR server to get real results
+          </p>
           <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
@@ -87,7 +119,7 @@ export function CareGapPage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r, i) => (
+                {DEMO.map((r, i) => (
                   <tr key={i} className="border-t border-gray-100 hover:bg-bisharod-mist transition-colors">
                     <td className="px-5 py-3 font-medium text-bisharod-navy">{r.measure}</td>
                     <td className="px-5 py-3">
@@ -105,7 +137,7 @@ export function CareGapPage() {
               </tbody>
             </table>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )

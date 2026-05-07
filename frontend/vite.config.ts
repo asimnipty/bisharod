@@ -4,7 +4,7 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/bisharod/',   // GitHub Pages repo name
+  base: '/',
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },
@@ -14,8 +14,5 @@ export default defineConfig({
       '/api': { target: 'http://localhost:4000', changeOrigin: true },
       '/fhir': { target: 'http://localhost:4000', changeOrigin: true },
     },
-  },
-  build: {
-    outDir: 'dist',
   },
 })
