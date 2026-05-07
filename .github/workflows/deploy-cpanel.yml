@@ -32,29 +32,32 @@ jobs:
           cd frontend/dist
           zip -r ../../deploy.zip .
           echo "✅ Zip created"
-          ls -lh ../../deploy.zip
 
       - name: Upload zip via cPanel API
         run: |
-          curl -sk -u "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASSWORD }}" \
-            "https://bisharod.com:2083/execute/Fileman/upload_files" \
-            -F "dir=/public_html" \
-            -F "file=@deploy.zip" \
-            -F "overwrite=1" | python3 -m json.tool
+          RESPONSE=$(curl -sk \
+            --user "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASSWORD }}" \
+            --form "dir=/public_html" \
+            --form "file=@deploy.zip" \
+            "https://${{ secrets.CPANEL_HOST }}:2083/execute/Fileman/upload_files")
+          echo "Response: $RESPONSE"
 
       - name: Extract zip via cPanel API
         run: |
-          curl -sk -u "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASSWORD }}" \
-            "https://bisharod.com:2083/execute/Fileman/extract" \
-            -d "dest=/public_html" \
-            -d "file=/public_html/deploy.zip" \
-            -d "overwrite=1" | python3 -m json.tool
+          RESPONSE=$(curl -sk \
+            --user "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASSWORD }}" \
+            --data "dest=/public_html" \
+            --data "file=/public_html/deploy.zip" \
+            --data "overwrite=1" \
+            "https://${{ secrets.CPANEL_HOST }}:2083/execute/Fileman/extract")
+          echo "Response: $RESPONSE"
 
       - name: Delete zip via cPanel API
         run: |
-          curl -sk -u "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASSWORD }}" \
-            "https://bisharod.com:2083/execute/Fileman/delete_files" \
-            -d "files-0=/public_html/deploy.zip" | python3 -m json.tool
+          curl -sk \
+            --user "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASSWORD }}" \
+            --data "files-0=/public_html/deploy.zip" \
+            "https://${{ secrets.CPANEL_HOST }}:2083/execute/Fileman/delete_files"
 
       - name: Done
-        run: echo "🎉 bisharod.com is now live!"
+        run: echo "🎉 bisharod.com deployed!"
