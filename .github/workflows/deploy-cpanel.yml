@@ -27,12 +27,34 @@ jobs:
           VITE_BASE_PATH: /
           VITE_API_BASE_URL: https://bisharod-api.onrender.com
 
-      - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: frontend/dist/
-          server-dir: /home/bisharod/public_html/
-          dangerous-clean-slate: true
+      - name: Zip dist folder
+        run: |
+          cd frontend/dist
+          zip -r ../../deploy.zip .
+          echo "✅ Zip created"
+          ls -lh ../../deploy.zip
+
+      - name: Upload zip via cPanel API
+        run: |
+          curl -sk -u "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASSWORD }}" \
+            "https://bisharod.com:2083/execute/Fileman/upload_files" \
+            -F "dir=/public_html" \
+            -F "file=@deploy.zip" \
+            -F "overwrite=1" | python3 -m json.tool
+
+      - name: Extract zip via cPanel API
+        run: |
+          curl -sk -u "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASSWORD }}" \
+            "https://bisharod.com:2083/execute/Fileman/extract" \
+            -d "dest=/public_html" \
+            -d "file=/public_html/deploy.zip" \
+            -d "overwrite=1" | python3 -m json.tool
+
+      - name: Delete zip via cPanel API
+        run: |
+          curl -sk -u "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASSWORD }}" \
+            "https://bisharod.com:2083/execute/Fileman/delete_files" \
+            -d "files-0=/public_html/deploy.zip" | python3 -m json.tool
+
+      - name: Done
+        run: echo "🎉 bisharod.com is now live!"
