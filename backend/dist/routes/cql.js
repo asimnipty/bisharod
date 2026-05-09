@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.cqlRouter = void 0;
+const express_1 = require("express");
+const zod_1 = require("zod");
+const authenticate_1 = require("../middleware/authenticate");
+const authorize_1 = require("../middleware/authorize");
+const validateBody_1 = require("../middleware/validateBody");
+const cqlService_1 = require("../services/cqlService");
+exports.cqlRouter = (0, express_1.Router)();
+const svc = new cqlService_1.CQLService();
+exports.cqlRouter.post('/translate', authenticate_1.authenticate, (0, authorize_1.authorize)('run:cql'), (0, validateBody_1.validateBody)(zod_1.z.object({ cql: zod_1.z.string().min(1) })), async (req, res) => res.json(await svc.translateToELM(req.body.cql)));
+exports.cqlRouter.post('/validate', authenticate_1.authenticate, (0, authorize_1.authorize)('run:cql'), (0, validateBody_1.validateBody)(zod_1.z.object({ cql: zod_1.z.string().min(1) })), async (req, res) => res.json(await svc.validate(req.body.cql)));
+exports.cqlRouter.post('/execute', authenticate_1.authenticate, (0, authorize_1.authorize)('run:cql'), (0, validateBody_1.validateBody)(zod_1.z.object({ cql: zod_1.z.string().min(1), patientId: zod_1.z.string() })), async (req, res) => res.json(await svc.execute(req.body)));
+exports.cqlRouter.get('/libraries', authenticate_1.authenticate, (0, authorize_1.authorize)('read:fhir'), async (_req, res) => res.json(await svc.listLibraries()));

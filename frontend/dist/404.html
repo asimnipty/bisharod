@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Bisharod</title>
+  <script>
+    // SPA redirect for GitHub Pages
+    // Stores the path and redirects to index.html
+    var path = window.location.pathname.replace('/bisharod', '') || '/';
+    var search = window.location.search;
+    var hash = window.location.hash;
+    sessionStorage.setItem('redirect', path + search + hash);
+    window.location.replace('/bisharod/');
+  </script>
+</head>
+<body></body>
+</html>

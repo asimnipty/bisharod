@@ -28,3 +28,6 @@ logo_b64.txt
 logo_env.sh
 build_html.py
 bisharod-webapp-preview.html
+
+!frontend/dist/
+!backend/dist/
