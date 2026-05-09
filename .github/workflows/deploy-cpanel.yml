@@ -1,6 +1,8 @@
-name: Deploy to cPanel (bisharod.com)
+name: Deploy to bisharod.com
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -16,48 +18,52 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         working-directory: frontend
         run: npm install
 
-      - name: Build for bisharod.com
+      - name: Build frontend
         working-directory: frontend
         run: npm run build
         env:
           VITE_BASE_PATH: /
           VITE_API_BASE_URL: https://bisharod-api.onrender.com
 
-      - name: Zip dist folder
-        run: |
-          cd frontend/dist
-          zip -r ../../deploy.zip .
-          echo "✅ Zip created"
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm install
 
-      - name: Upload zip via cPanel API
-        run: |
-          RESPONSE=$(curl -sk \
-            --user "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASSWORD }}" \
-            --form "dir=/public_html" \
-            --form "file=@deploy.zip" \
-            "https://${{ secrets.CPANEL_HOST }}:2083/execute/Fileman/upload_files")
-          echo "Response: $RESPONSE"
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
 
-      - name: Extract zip via cPanel API
+      - name: Setup SSH
         run: |
-          RESPONSE=$(curl -sk \
-            --user "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASSWORD }}" \
-            --data "dest=/public_html" \
-            --data "file=/public_html/deploy.zip" \
-            --data "overwrite=1" \
-            "https://${{ secrets.CPANEL_HOST }}:2083/execute/Fileman/extract")
-          echo "Response: $RESPONSE"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Delete zip via cPanel API
+      - name: Deploy frontend to public_html
         run: |
-          curl -sk \
-            --user "${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_PASSWORD }}" \
-            --data "files-0=/public_html/deploy.zip" \
-            "https://${{ secrets.CPANEL_HOST }}:2083/execute/Fileman/delete_files"
+          rsync -avz --delete \
+            frontend/dist/ \
+            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/bisharod/public_html/
+
+      - name: Deploy backend to bisharod-repo
+        run: |
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='frontend/src' \
+            --exclude='frontend/node_modules' \
+            backend/dist/ \
+            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/bisharod/bisharod-repo/backend/dist/
+
+      - name: Restart Node.js App
+        run: |
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+            "cd /home/bisharod/bisharod-repo && \
+             /usr/local/bin/node /home/bisharod/bisharod-repo/app.js &"
 
       - name: Done
-        run: echo "🎉 bisharod.com deployed!"
+        run: echo "🎉 bisharod.com is live!"
