@@ -3,7 +3,7 @@ import { Users, Target, Globe, Award } from "lucide-react";
 const TEAM = [
   {
     name: "Asim",
-    role: "Founder & CEO",
+    role: "TEEE",
     bio: "Digital health data expert with 10+ years in FHIR and clinical informatics.",
   },
   {
