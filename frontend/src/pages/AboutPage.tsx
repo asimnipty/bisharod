@@ -180,10 +180,12 @@ export function AboutPage() {
           Let's talk about how Bisharod can help your organization implement
           FHIR-native data services.
         </p>
-        href="mailto:info@bisharod.com" className="inline-flex items-center
-        gap-2 px-8 py-3 bg-bisharod-teal text-bisharod-navy font-semibold
-        rounded hover:bg-bisharod-teal-light transition-colors"
-        <a>Get in Touch</a>
+        <a
+          href="mailto:info@bisharod.com"
+          className="inline-flex items-center gap-2 px-8 py-3 bg-bisharod-teal text-bisharod-navy font-semibold rounded hover:bg-bisharod-teal-light transition-colors"
+        >
+          Get in Touch
+        </a>
       </div>
     </div>
   );
