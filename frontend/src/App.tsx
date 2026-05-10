@@ -10,6 +10,8 @@ import { CareGapPage } from "./pages/CareGapPage";
 import { MeasuresPage } from "./pages/MeasuresPage";
 import { PriorAuthPage } from "./pages/PriorAuthPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { AboutPage } from "./pages/AboutPage";
+import { BlogPage } from "./pages/BlogPage";
 
 export default function App() {
   return (
@@ -27,6 +29,8 @@ export default function App() {
           <Route path="portal/care-gaps" element={<CareGapPage />} />
           <Route path="portal/measures" element={<MeasuresPage />} />
           <Route path="portal/prior-auth" element={<PriorAuthPage />} />
+          <Route path="about" element={<AboutPage />} />
+          <Route path="blog" element={<BlogPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
