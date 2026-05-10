@@ -21,6 +21,8 @@ export default function App() {
         <Route index element={<HomePage />} />
         <Route path="services" element={<ServicesPage />} />
         <Route path="login" element={<LoginPage />} />
+        <Route path="about" element={<AboutPage />} />
+        <Route path="blog" element={<BlogPage />} />
 
         {/* Protected */}
         <Route element={<ProtectedRoute />}>
@@ -29,8 +31,6 @@ export default function App() {
           <Route path="portal/care-gaps" element={<CareGapPage />} />
           <Route path="portal/measures" element={<MeasuresPage />} />
           <Route path="portal/prior-auth" element={<PriorAuthPage />} />
-          <Route path="about" element={<AboutPage />} />
-          <Route path="blog" element={<BlogPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
