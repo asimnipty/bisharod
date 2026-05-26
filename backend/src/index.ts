@@ -15,9 +15,12 @@ import { measuresRouter } from "./routes/measures";
 import { careGapRouter } from "./routes/careGaps";
 import { priorAuthRouter } from "./routes/priorAuth";
 import { hl7Router } from "./routes/hl7";
+import blogRoutes from "./routes/blog";
+
+// Add this with your other route registrations:
 
 const app = express();
-
+app.use("/api/blog", blogRoutes); // Register blog routes under /api/blog
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: config.CORS_ORIGINS, credentials: true }));
 app.use(express.json({ limit: "10mb" }));
