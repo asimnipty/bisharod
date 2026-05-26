@@ -1,68 +1,17 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
+import { blogApi } from "@/api/fhirClient"; // Import the blog API
 
-const POSTS = [
-  {
-    id: 1,
-    title: "Getting Started with CQL for HEDIS Measures",
-    excerpt:
-      "Clinical Quality Language (CQL) is transforming how healthcare organizations implement digital quality measures. Learn how to author your first CQL expression for HEDIS compliance.",
-    category: "CQL",
-    date: "May 5, 2026",
-    readTime: "8 min read",
-    slug: "getting-started-cql-hedis",
-  },
-  {
-    id: 2,
-    title: "FHIR R4 vs R5: What Healthcare Teams Need to Know",
-    excerpt:
-      "The transition from FHIR R4 to R5 brings significant improvements in interoperability and data modeling. Here is what your team needs to prepare for.",
-    category: "FHIR",
-    date: "April 28, 2026",
-    readTime: "6 min read",
-    slug: "fhir-r4-vs-r5",
-  },
-  {
-    id: 3,
-    title: "Prior Authorization Automation with Da Vinci PAS",
-    excerpt:
-      "CMS mandates are driving payers and providers to implement electronic prior authorization. The Da Vinci PAS implementation guide provides the blueprint.",
-    category: "Prior Auth",
-    date: "April 15, 2026",
-    readTime: "10 min read",
-    slug: "prior-auth-da-vinci-pas",
-  },
-  {
-    id: 4,
-    title: "Care Gap Analysis Using FHIR $care-gaps Operation",
-    excerpt:
-      "Identifying care gaps at population scale is now possible with the FHIR $care-gaps operation. Learn how to implement it using CQL-defined quality measures.",
-    category: "Care Gaps",
-    date: "April 2, 2026",
-    readTime: "7 min read",
-    slug: "care-gap-analysis-fhir",
-  },
-  {
-    id: 5,
-    title: "HL7 v2 to FHIR Migration: A Practical Guide",
-    excerpt:
-      "Most healthcare organizations still rely on HL7 v2 messages for lab results, ADT events, and orders. Here is how to bridge legacy systems to modern FHIR APIs.",
-    category: "HL7",
-    date: "March 20, 2026",
-    readTime: "12 min read",
-    slug: "hl7-v2-fhir-migration",
-  },
-  {
-    id: 6,
-    title: "Clinical Decision Support with CDS Hooks",
-    excerpt:
-      "CDS Hooks enables real-time clinical decision support integrated directly into EHR workflows. Learn how to build and deploy CDS services using FHIR and CQL.",
-    category: "CDS",
-    date: "March 8, 2026",
-    readTime: "9 min read",
-    slug: "clinical-decision-support-cds-hooks",
-  },
-];
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  date: string;
+  readTime: string;
+  slug: string;
+}
 
 const CATEGORIES = [
   "All",
@@ -85,6 +34,36 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export function BlogPage() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  // Fetch blog posts from backend
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        const data = await blogApi.getPosts();
+        setPosts(data);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to load blog posts:", err);
+        setError("Failed to load blog posts. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  // Filter posts by category
+  const filteredPosts =
+    selectedCategory === "All"
+      ? posts
+      : posts.filter((post) => post.category === selectedCategory);
+
   return (
     <div className="min-h-screen bg-bisharod-mist">
       {/* Hero */}
@@ -107,61 +86,95 @@ export function BlogPage() {
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
-              className="px-4 py-1.5 rounded-full text-sm font-medium border border-gray-200 bg-white text-bisharod-navy/60 hover:border-bisharod-teal hover:text-bisharod-teal transition-colors"
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                selectedCategory === cat
+                  ? "border-bisharod-teal text-bisharod-teal bg-bisharod-teal/5"
+                  : "border-gray-200 bg-white text-bisharod-navy/60 hover:border-bisharod-teal hover:text-bisharod-teal"
+              }`}
             >
               {cat}
             </button>
           ))}
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <p className="text-bisharod-navy/50">Loading blog posts...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-12 bg-red-50 rounded-lg border border-red-200 text-red-600">
+            {error}
+          </div>
+        )}
+
+        {/* No Posts State */}
+        {!loading && !error && filteredPosts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-bisharod-navy/50">No blog posts found.</p>
+          </div>
+        )}
+
         {/* Posts grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {POSTS.map((post) => (
-            <article
-              key={post.id}
-              className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200 group"
-            >
-              {/* Color bar */}
-              <div className="h-1 bg-bisharod-teal" />
+        {!loading && !error && filteredPosts.length > 0 && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPosts.map((post) => (
+              <article
+                key={post.id}
+                className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200 group"
+              >
+                {/* Color bar */}
+                <div className="h-1 bg-bisharod-teal" />
 
-              <div className="p-6">
-                {/* Category */}
-                <span
-                  className={`inline-block text-xs font-semibold font-mono px-2.5 py-1 rounded border mb-4 ${CATEGORY_COLORS[post.category] ?? "bg-gray-50 text-gray-600 border-gray-200"}`}
-                >
-                  {post.category}
-                </span>
-
-                {/* Title */}
-                <h2 className="font-semibold text-bisharod-navy text-base leading-snug mb-3 group-hover:text-bisharod-teal transition-colors">
-                  {post.title}
-                </h2>
-
-                {/* Excerpt */}
-                <p className="text-bisharod-navy/50 text-sm leading-relaxed mb-4 line-clamp-3">
-                  {post.excerpt}
-                </p>
-
-                {/* Meta */}
-                <div className="flex items-center gap-4 text-xs text-bisharod-navy/40 mb-4">
-                  <span className="flex items-center gap-1">
-                    <Calendar size={11} />
-                    {post.date}
+                <div className="p-6">
+                  {/* Category */}
+                  <span
+                    className={`inline-block text-xs font-semibold font-mono px-2.5 py-1 rounded border mb-4 ${
+                      CATEGORY_COLORS[post.category] ??
+                      "bg-gray-50 text-gray-600 border-gray-200"
+                    }`}
+                  >
+                    {post.category}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={11} />
-                    {post.readTime}
-                  </span>
+
+                  {/* Title */}
+                  <h2 className="font-semibold text-bisharod-navy text-base leading-snug mb-3 group-hover:text-bisharod-teal transition-colors">
+                    {post.title}
+                  </h2>
+
+                  {/* Excerpt */}
+                  <p className="text-bisharod-navy/50 text-sm leading-relaxed mb-4 line-clamp-3">
+                    {post.excerpt}
+                  </p>
+
+                  {/* Meta */}
+                  <div className="flex items-center gap-4 text-xs text-bisharod-navy/40 mb-4">
+                    <span className="flex items-center gap-1">
+                      <Calendar size={11} />
+                      {post.date}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock size={11} />
+                      {post.readTime}
+                    </span>
+                  </div>
+
+                  {/* Read more */}
+                  <Link
+                    to={`/blog/${post.slug}`}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-bisharod-teal hover:gap-2.5 transition-all"
+                  >
+                    Read article <ArrowRight size={12} />
+                  </Link>
                 </div>
-
-                {/* Read more */}
-                <button className="flex items-center gap-1.5 text-xs font-semibold text-bisharod-teal hover:gap-2.5 transition-all">
-                  Read article <ArrowRight size={12} />
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
+              </article>
+            ))}
+          </div>
+        )}
 
         {/* Newsletter CTA */}
         <div className="mt-16 bg-bisharod-navy rounded-xl p-10 text-center">
