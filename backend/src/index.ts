@@ -16,6 +16,8 @@ import { careGapRouter } from "./routes/careGaps";
 import { priorAuthRouter } from "./routes/priorAuth";
 import { hl7Router } from "./routes/hl7";
 import blogRoutes from "./routes/blog";
+// Blog API fix - new deployment
+import "express-async-errors";
 
 const app = express();
 
