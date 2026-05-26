@@ -20,7 +20,9 @@ const measures_1 = require("./routes/measures");
 const careGaps_1 = require("./routes/careGaps");
 const priorAuth_1 = require("./routes/priorAuth");
 const hl7_1 = require("./routes/hl7");
+const blog_1 = __importDefault(require("./routes/blog"));
 const app = (0, express_1.default)();
+// ── Middleware (MUST come before routes) ──────────────────────────────────────
 app.use((0, helmet_1.default)({ contentSecurityPolicy: false }));
 app.use((0, cors_1.default)({ origin: env_1.config.CORS_ORIGINS, credentials: true }));
 app.use(express_1.default.json({ limit: "10mb" }));
@@ -36,6 +38,7 @@ app.use("/api/measures", measures_1.measuresRouter);
 app.use("/api/care-gaps", careGaps_1.careGapRouter);
 app.use("/api/prior-auth", priorAuth_1.priorAuthRouter);
 app.use("/api/hl7", hl7_1.hl7Router);
+app.use("/api/blog", blog_1.default); // ✅ Blog route registered here
 // ── Serve React Frontend ──────────────────────────────────────────────────────
 const frontendDist = path_1.default.join(__dirname, "../../frontend/dist");
 app.use(express_1.default.static(frontendDist));
@@ -43,6 +46,8 @@ app.use(express_1.default.static(frontendDist));
 app.get("*", (req, res) => {
     res.sendFile(path_1.default.join(frontendDist, "index.html"));
 });
+// ── Error Handler (MUST come last) ────────────────────────────────────────────
 app.use(errorHandler_1.errorHandler);
+// ── Start Server ──────────────────────────────────────────────────────────────
 app.listen(env_1.config.PORT, () => console.log(`✅ Bisharod running on port ${env_1.config.PORT}`));
 exports.default = app;
