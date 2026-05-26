@@ -17,10 +17,9 @@ import { priorAuthRouter } from "./routes/priorAuth";
 import { hl7Router } from "./routes/hl7";
 import blogRoutes from "./routes/blog";
 
-// Add this with your other route registrations:
-
 const app = express();
-app.use("/api/blog", blogRoutes); // Register blog routes under /api/blog
+
+// ── Middleware (MUST come before routes) ──────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: config.CORS_ORIGINS, credentials: true }));
 app.use(express.json({ limit: "10mb" }));
@@ -37,6 +36,7 @@ app.use("/api/measures", measuresRouter);
 app.use("/api/care-gaps", careGapRouter);
 app.use("/api/prior-auth", priorAuthRouter);
 app.use("/api/hl7", hl7Router);
+app.use("/api/blog", blogRoutes); // ✅ Blog route registered here
 
 // ── Serve React Frontend ──────────────────────────────────────────────────────
 const frontendDist = path.join(__dirname, "../../frontend/dist");
@@ -47,8 +47,10 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(frontendDist, "index.html"));
 });
 
+// ── Error Handler (MUST come last) ────────────────────────────────────────────
 app.use(errorHandler);
 
+// ── Start Server ──────────────────────────────────────────────────────────────
 app.listen(config.PORT, () =>
   console.log(`✅ Bisharod running on port ${config.PORT}`),
 );
