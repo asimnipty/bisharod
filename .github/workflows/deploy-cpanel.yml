@@ -29,41 +29,15 @@ jobs:
           VITE_BASE_PATH: /
           VITE_API_BASE_URL: https://bisharod-api.onrender.com
 
-      - name: Install backend dependencies
-        working-directory: backend
-        run: npm install
-
-      - name: Build backend
-        working-directory: backend
-        run: npm run build
-
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Deploy frontend to public_html
-        run: |
-          rsync -avz --delete \
-            frontend/dist/ \
-            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/bisharod/public_html/
-
-      - name: Deploy backend to bisharod-repo
-        run: |
-          rsync -avz --delete \
-            --exclude='.git' \
-            --exclude='frontend/src' \
-            --exclude='frontend/node_modules' \
-            backend/dist/ \
-            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/bisharod/bisharod-repo/backend/dist/
-
-      - name: Restart Node.js App
-        run: |
-          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-            "cd /home/bisharod/bisharod-repo && \
-             /usr/local/bin/node /home/bisharod/bisharod-repo/app.js &"
+      - name: Deploy frontend to cPanel via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./frontend/dist/
+          server-dir: ./public_html/
+          dangerous-clean-slate: true
 
       - name: Done
-        run: echo "🎉 bisharod.com is live!"
+        run: echo "🎉 bisharod.com frontend is live!"
