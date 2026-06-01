@@ -12,6 +12,8 @@ import { PriorAuthPage } from "./pages/PriorAuthPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { AboutPage } from "./pages/AboutPage";
 import { BlogPage } from "./pages/BlogPage";
+import { BlogDetailPage } from "./pages/BlogDetailPage";
+import { BlogEditorPage } from "./pages/BlogEditorPage";
 
 export default function App() {
   return (
@@ -23,6 +25,7 @@ export default function App() {
         <Route path="login" element={<LoginPage />} />
         <Route path="about" element={<AboutPage />} />
         <Route path="blog" element={<BlogPage />} />
+        <Route path="blog/:slug" element={<BlogDetailPage />} />
 
         {/* Protected */}
         <Route element={<ProtectedRoute />}>
@@ -31,6 +34,8 @@ export default function App() {
           <Route path="portal/care-gaps" element={<CareGapPage />} />
           <Route path="portal/measures" element={<MeasuresPage />} />
           <Route path="portal/prior-auth" element={<PriorAuthPage />} />
+          <Route path="blog/new" element={<BlogEditorPage />} />
+          <Route path="blog/:slug/edit" element={<BlogEditorPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
