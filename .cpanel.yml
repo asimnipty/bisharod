@@ -1,5 +1,13 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/bisharod/public_html
-    - /bin/cp -rf $TRAVIS_BUILD_DIR/frontend/dist/* $DEPLOYPATH/
+    - export DEPLOYPATH=/home/bisharod/bisharod-repo
+
+    # Install backend deps
+    - cd $DEPLOYPATH/backend && npm install --production
+
+    # Build frontend
+    - cd $DEPLOYPATH/frontend && npm install && npm run build
+
+    # Copy built frontend into backend's expected location
+    - cp -r $DEPLOYPATH/frontend/dist $DEPLOYPATH/backend/dist
