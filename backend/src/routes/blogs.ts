@@ -1,184 +1,181 @@
 import { Router } from "express";
+import { pool } from "../db/pool";
 import { authenticate } from "../middleware/authenticate";
 import { authorize } from "../middleware/authorize";
 
 const router = Router();
 
-interface BlogPost {
-  id: number;
-  title: string;
-  slug: string;
-  content: string;
-  category: string;
-  created_at: string;
-  updated_at: string;
-  read_time: string;
-  author_id: string;
-  author_name: string;
+// helper — generate slug from title
+function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
-// In-memory storage (replace with database in production)
-let blogs: BlogPost[] = [
-  {
-    id: 1,
-    title: "Getting Started with CQL for HEDIS Measures",
-    slug: "getting-started-cql-hedis",
-    content: `
-      <p>Clinical Quality Language (CQL) is transforming healthcare...</p>
-      <h2>Why CQL matters</h2>
-      <p>CQL enables standardized logic...</p>
-    `,
-    category: "CQL",
-    created_at: "May 5, 2026",
-    updated_at: "May 5, 2026",
-    read_time: "8 min read",
-    author_id: "system",
-    author_name: "Bisharod Team",
-  },
-];
+// helper — estimate read time
+function readTime(content: string): string {
+  const words = content.replace(/<[^>]+>/g, "").split(/\s+/).length;
+  return `${Math.max(1, Math.ceil(words / 200))} min read`;
+}
 
-let nextId = 2;
+// helper — format date
+function formatDate(d: Date): string {
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
 
-// ✅ GET all blogs
-router.get("/", async (req, res) => {
-  res.json(blogs);
+// ── GET /api/blogs ────────────────────────────────────────────────────────────
+router.get("/", async (_req, res) => {
+  const { rows } = await pool.query(
+    `SELECT b.id, b.title, b.slug, b.excerpt,
+            LEFT(b.content, 300) AS content_preview,
+            b.category, b.read_time, b.author_name,
+            TO_CHAR(b.created_at, 'Month DD, YYYY') AS created_at
+     FROM blogs b
+     ORDER BY b.created_at DESC`,
+  );
+  res.json(rows);
 });
 
-// ✅ GET blog by slug
+// ── GET /api/blogs/:slug ──────────────────────────────────────────────────────
 router.get("/:slug", async (req, res) => {
-  const blog = blogs.find((b) => b.slug === req.params.slug);
+  const { rows } = await pool.query(
+    `SELECT b.id, b.title, b.slug, b.content, b.excerpt,
+            b.category, b.read_time, b.author_id, b.author_name,
+            TO_CHAR(b.created_at, 'Month DD, YYYY') AS created_at,
+            TO_CHAR(b.updated_at, 'Month DD, YYYY') AS updated_at
+     FROM blogs b
+     WHERE b.slug = $1`,
+    [req.params.slug],
+  );
+  if (!rows[0]) return res.status(404).json({ error: "Blog not found" });
+  res.json(rows[0]);
+});
 
-  if (!blog) {
-    return res.status(404).json({ message: "Blog not found" });
+// ── POST /api/blogs ───────────────────────────────────────────────────────────
+router.post("/", authenticate, authorize("author:blogs"), async (req, res) => {
+  const { title, content, category, excerpt } = req.body;
+
+  if (!title || !content || !category) {
+    return res
+      .status(400)
+      .json({ error: "title, content, category are required" });
   }
 
-  res.json(blog);
-});
+  const slug = slugify(title);
 
-// ✅ POST - Create new blog (requires auth + author:blogs permission)
-router.post("/", authenticate, authorize("author:blogs"), async (req, res) => {
-  try {
-    const { title, content, category } = req.body;
+  // check duplicate slug
+  const exists = await pool.query("SELECT id FROM blogs WHERE slug = $1", [
+    slug,
+  ]);
+  if (exists.rows[0]) {
+    return res
+      .status(409)
+      .json({ error: "A post with this title already exists" });
+  }
 
-    if (!title || !content || !category) {
-      return res
-        .status(400)
-        .json({ error: "Missing required fields: title, content, category" });
-    }
-
-    // Generate slug from title
-    const slug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-
-    // Check for duplicate slug
-    if (blogs.some((b) => b.slug === slug)) {
-      return res
-        .status(400)
-        .json({ error: "A blog with this title already exists" });
-    }
-
-    // Estimate read time (roughly 200 words per minute)
-    const wordCount = content.replace(/<[^>]+>/g, "").split(/\s+/).length;
-    const readTime = Math.max(1, Math.ceil(wordCount / 200));
-
-    const now = new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-    const newBlog: BlogPost = {
-      id: nextId++,
+  const { rows } = await pool.query(
+    `INSERT INTO blogs (title, slug, content, excerpt, category, read_time, author_id, author_name)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     RETURNING id, title, slug, category, read_time, author_name,
+               TO_CHAR(created_at, 'Month DD, YYYY') AS created_at`,
+    [
       title,
       slug,
       content,
+      excerpt ?? null,
       category,
-      created_at: now,
-      updated_at: now,
-      read_time: `${readTime} min read`,
-      author_id: req.user!.sub,
-      author_name: req.user!.name,
-    };
+      readTime(content),
+      req.user!.sub,
+      req.user!.name,
+    ],
+  );
 
-    blogs.push(newBlog);
-    res.status(201).json(newBlog);
-  } catch (error) {
-    console.error("Error creating blog:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
+  res.status(201).json(rows[0]);
 });
 
-// ✅ PUT - Update blog (requires auth + author:blogs permission, own blog or admin)
+// ── PUT /api/blogs/:slug ──────────────────────────────────────────────────────
 router.put(
   "/:slug",
   authenticate,
   authorize("author:blogs"),
   async (req, res) => {
-    try {
-      const { title, content, category } = req.body;
-      const blog = blogs.find((b) => b.slug === req.params.slug);
+    const { title, content, category, excerpt } = req.body;
 
-      if (!blog) {
-        return res.status(404).json({ error: "Blog not found" });
-      }
+    // fetch existing
+    const existing = await pool.query("SELECT * FROM blogs WHERE slug = $1", [
+      req.params.slug,
+    ]);
+    if (!existing.rows[0])
+      return res.status(404).json({ error: "Blog not found" });
 
-      // Check authorization: only author or admin can edit
-      if (blog.author_id !== req.user!.sub && req.user!.role !== "admin") {
-        return res
-          .status(403)
-          .json({ error: "You can only edit your own blogs" });
-      }
+    const blog = existing.rows[0];
 
-      // Update fields
-      if (title) blog.title = title;
-      if (content) blog.content = content;
-      if (category) blog.category = category;
-
-      const now = new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-      blog.updated_at = now;
-
-      res.json(blog);
-    } catch (error) {
-      console.error("Error updating blog:", error);
-      res.status(500).json({ error: "Internal server error" });
+    // only author or admin can edit
+    if (
+      String(blog.author_id) !== req.user!.sub &&
+      req.user!.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ error: "You can only edit your own posts" });
     }
+
+    const { rows } = await pool.query(
+      `UPDATE blogs
+     SET title      = COALESCE($1, title),
+         content    = COALESCE($2, content),
+         category   = COALESCE($3, category),
+         excerpt    = COALESCE($4, excerpt),
+         read_time  = COALESCE($5, read_time),
+         updated_at = NOW()
+     WHERE slug = $6
+     RETURNING id, title, slug, category, read_time, author_name,
+               TO_CHAR(created_at, 'Month DD, YYYY') AS created_at,
+               TO_CHAR(updated_at, 'Month DD, YYYY') AS updated_at`,
+      [
+        title ?? null,
+        content ?? null,
+        category ?? null,
+        excerpt ?? null,
+        content ? readTime(content) : null,
+        req.params.slug,
+      ],
+    );
+
+    res.json(rows[0]);
   },
 );
 
-// ✅ DELETE blog (requires auth + author:blogs permission, own blog or admin)
+// ── DELETE /api/blogs/:slug ───────────────────────────────────────────────────
 router.delete(
   "/:slug",
   authenticate,
   authorize("author:blogs"),
   async (req, res) => {
-    try {
-      const index = blogs.findIndex((b) => b.slug === req.params.slug);
+    const existing = await pool.query("SELECT * FROM blogs WHERE slug = $1", [
+      req.params.slug,
+    ]);
+    if (!existing.rows[0])
+      return res.status(404).json({ error: "Blog not found" });
 
-      if (index === -1) {
-        return res.status(404).json({ error: "Blog not found" });
-      }
+    const blog = existing.rows[0];
 
-      const blog = blogs[index];
-
-      // Check authorization: only author or admin can delete
-      if (blog.author_id !== req.user!.sub && req.user!.role !== "admin") {
-        return res
-          .status(403)
-          .json({ error: "You can only delete your own blogs" });
-      }
-
-      blogs.splice(index, 1);
-      res.json({ message: "Blog deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting blog:", error);
-      res.status(500).json({ error: "Internal server error" });
+    if (
+      String(blog.author_id) !== req.user!.sub &&
+      req.user!.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ error: "You can only delete your own posts" });
     }
+
+    await pool.query("DELETE FROM blogs WHERE slug = $1", [req.params.slug]);
+    res.json({ message: "Blog deleted successfully" });
   },
 );
 
