@@ -1,6 +1,6 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/bisharod/bisharod-repo
+    - export DEPLOYPATH=/home/bisharod/bisharod-live
     - cd $DEPLOYPATH/frontend && npm install && npm run build
     - cd $DEPLOYPATH/backend && npm install && npm run build
