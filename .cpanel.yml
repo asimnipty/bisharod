@@ -2,5 +2,5 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/bisharod/bisharod-live
-    - cd $DEPLOYPATH/backend && npm install && npm run build
-    - cd $DEPLOYPATH/frontend && npm install && npm run build
+    - cd $DEPLOYPATH/backend && npm install --production=false && npm run build
+    - cd $DEPLOYPATH/frontend && npm install --production=false && npm run build
