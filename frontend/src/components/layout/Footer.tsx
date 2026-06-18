@@ -10,7 +10,7 @@ export function Footer() {
           <img
             src="logo.png"
             alt="Bisharod"
-            className="h-10"
+            
           />
           <p className="text-white/40 text-xs">
             Digital Health Data Services · FHIR-native
