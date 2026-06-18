@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 export function Footer() {
   return (
     <footer className="bg-bisharod-navy border-t border-bisharod-teal/15">
-      <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-3">
+      <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
+
+        {/* Logo */}
+        <div className="flex flex-col gap-3">
           <img
             src="logo.png"
             alt="Bisharod"
@@ -15,7 +17,8 @@ export function Footer() {
           </p>
         </div>
 
-        <nav className="flex gap-6">
+        {/* Navigation */}
+        <nav className="flex flex-col gap-3">
           {[
             { to: "/services", label: "Services" },
             { to: "/portal", label: "Portal" },
@@ -31,9 +34,27 @@ export function Footer() {
           ))}
         </nav>
 
-        <p className="text-white/25 text-xs">
+        {/* Contact Info ✅ NEW */}
+        <div className="text-xs text-white/40">
+          <p className="text-white/60 mb-2 uppercase tracking-wider">
+            Contact
+          </p>
+
+          <p>
+            7533 S Center View Ct Ste N<br />
+            West Jordan, UT 84084
+          </p>
+
+          <p className="mt-2">
+            Phone: 385-363-3541
+          </p>
+        </div>
+
+        {/* Copyright */}
+        <div className="text-xs text-white/25 flex items-end">
           © {new Date().getFullYear()} Bisharod
-        </p>
+        </div>
+
       </div>
     </footer>
   );
