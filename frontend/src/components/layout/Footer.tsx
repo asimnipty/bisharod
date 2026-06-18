@@ -3,40 +3,45 @@ import { Link } from "react-router-dom";
 export function Footer() {
   return (
     <footer className="bg-bisharod-navy border-t border-bisharod-teal/15">
-      <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
 
-        {/* Logo */}
+        {/* Logo + Tagline */}
         <div className="flex flex-col gap-3">
           <img
             src="logo.png"
             alt="Bisharod"
-            className="h-8 w-auto opacity-80"
+            className="h-10"
           />
-          <p className="text-white/30 text-xs">
+          <p className="text-white/40 text-xs">
             Digital Health Data Services · FHIR-native
+            <div>
+          © {new Date().getFullYear()} Bisharod
+        </div>
           </p>
+           {/* Copyright ✅ aligned right */}
+        
         </div>
 
         {/* Navigation */}
-        <nav className="flex flex-col gap-3">
-          {[
-            { to: "/services", label: "Services" },
-            { to: "/portal", label: "Portal" },
-            { to: "/login", label: "Sign In" },
-          ].map(({ to, label }) => (
-            <Link
-              key={to}
-              to={to}
-              className="text-xs text-white/40 hover:text-bisharod-teal-light uppercase tracking-widest transition-colors"
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex flex-col gap-2">
+          <p className="text-white/60 text-xs uppercase tracking-wider mb-1">
+            Navigation
+          </p>
 
-        {/* Contact Info ✅ NEW */}
-        <div className="text-xs text-white/40">
-          <p className="text-white/60 mb-2 uppercase tracking-wider">
+          <Link to="/services" className="text-white/40 hover:text-bisharod-teal-light text-xs">
+            Services
+          </Link>
+          <Link to="/portal" className="text-white/40 hover:text-bisharod-teal-light text-xs">
+            Portal
+          </Link>
+          <Link to="/login" className="text-white/40 hover:text-bisharod-teal-light text-xs">
+            Sign In
+          </Link>
+        </div>
+
+        {/* Contact ✅ FIXED ALIGNMENT */}
+        <div className="flex flex-col gap-2 text-xs text-white/40">
+          <p className="text-white/60 uppercase tracking-wider mb-1">
             Contact
           </p>
 
@@ -45,15 +50,10 @@ export function Footer() {
             West Jordan, UT 84084
           </p>
 
-          <p className="mt-2">
-            Phone: 385-363-3541
-          </p>
+          <p>Phone: 385-363-3541</p>
         </div>
 
-        {/* Copyright */}
-        <div className="text-xs text-white/25 flex items-end">
-          © {new Date().getFullYear()} Bisharod
-        </div>
+       
 
       </div>
     </footer>
