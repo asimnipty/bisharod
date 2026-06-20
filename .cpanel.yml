@@ -1,20 +1,4 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/bisharod/bisharod-live
-
-    # Go to frontend
-    - cd $DEPLOYPATH/frontend
-
-    # Install dependencies
-    - npm install
-
-    # Build project
-    - npm run build
-
-    # Clean old site
-    - rm -rf /home/bisharod/public_html/*
-
-    # Copy new build
-    - /bin/cp -r $DEPLOYPATH/frontend/build/* /home/bisharod/public_html/
-``
+    - /bin/cp -r frontend/* /home/bisharod/public_html/
