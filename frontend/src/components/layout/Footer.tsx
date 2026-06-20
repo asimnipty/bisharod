@@ -6,7 +6,8 @@ export function Footer() {
       <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
         {/* Logo + Tagline */}
         <div className="flex flex-col gap-3">
-          <img src="logo.png" alt="Bisharod" />
+          <img className="h-16 w-auto object-contain"
+           src="logo.png" alt="Bisharod" />
           <div className="text-white/40 text-xs">
             <p>Digital Health Data Services · FHIR-native</p>
             <p className="mt-2">© {new Date().getFullYear()} Bisharod</p>
