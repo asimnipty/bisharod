@@ -7,7 +7,7 @@ export function Footer() {
         {/* Logo + Tagline */}
         <div className="flex flex-col gap-3">
           <img
-            className="h-12 justify-left"
+            className="h-12"
             src="logo.png"
             alt="Bisharod"
           />
