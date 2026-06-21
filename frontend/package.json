@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build:github": "vite build",
+    "build:cpanel": "vite build --base=./",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
