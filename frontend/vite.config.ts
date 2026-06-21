@@ -4,15 +4,8 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/bisharod/",
+  base: process.env.NODE_ENV === "production" ? "/bisharod/" : "./",
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
-  },
-  server: {
-    port: 5173,
-    proxy: {
-      "/api": { target: "http://localhost:4000", changeOrigin: true },
-      "/fhir": { target: "http://localhost:4000", changeOrigin: true },
-    },
   },
 });
