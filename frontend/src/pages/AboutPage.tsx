@@ -2,18 +2,18 @@ import { Users, Target, Globe, Award } from "lucide-react";
 
 const TEAM = [
   {
-    name: "Asim",
-    role: "TEEE",
+    name: "Md Nazmul Karim",
+    role: "Co-Founder",
     bio: "Digital health data expert with 10+ years in FHIR and clinical informatics.",
   },
   {
-    name: "Clinical Team",
-    role: "Health Informatics",
+    name: "Md Jahid Iqbal",
+    role: "Co-Founder ",
     bio: "Specialists in CQL authoring, quality measures, and HEDIS compliance.",
   },
   {
-    name: "Engineering",
-    role: "Platform & API",
+    name: "Md Jahid Iqbal",
+    role: "Manager",
     bio: "FHIR-native engineers building interoperable healthcare data pipelines.",
   },
 ];

@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "build:github": "vite build",
-    "build:cpanel": "vite build --base=./",
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build": "vite build --mode ghpages",
+    "preview": "vite preview",
+    "build:cpanel": "vite build",
+    "deploy": "npm run build:cpanel && node deploy.cjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.51.0",
@@ -24,6 +25,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.19",
+    "ftp-deploy": "^2.4.7",
     "postcss": "^8.4.40",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.5.0",
