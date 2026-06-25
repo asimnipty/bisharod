@@ -4,7 +4,7 @@ const TEAM = [
   {
     name: "Md Nazmul Karim",
     role: "Co-Founder",
-    bio: "Digital health data expert with 4+ years in FHIR and clinical informatics.",
+    bio: "Digital health data expert with 4+ years in FHIR and Clinical data services.",
   },
   {
     name: "Md Jahid Iqbal",
