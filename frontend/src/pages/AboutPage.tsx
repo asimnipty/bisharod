@@ -4,17 +4,12 @@ const TEAM = [
   {
     name: "Md Nazmul Karim",
     role: "Co-Founder",
-    bio: "Digital health data expert with 10+ years in FHIR and clinical informatics.",
+    bio: "Digital health data expert with 4+ years in FHIR and clinical informatics.",
   },
   {
     name: "Md Jahid Iqbal",
-    role: "Co-Founder ",
+    role: "Co-Founder & Manager",
     bio: "Specialists in CQL authoring, quality measures, and HEDIS compliance.",
-  },
-  {
-    name: "Md Jahid Iqbal",
-    role: "Manager",
-    bio: "FHIR-native engineers building interoperable healthcare data pipelines.",
   },
 ];
 
