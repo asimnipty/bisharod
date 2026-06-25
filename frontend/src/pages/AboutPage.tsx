@@ -4,11 +4,13 @@ const TEAM = [
   {
     name: "Md Nazmul Karim",
     role: "Co-Founder",
-    bio: "Digital health data expert with 4+ years in FHIR and Clinical data services.",
+    email: "nazmul@bisharod.com",
+    bio: "Digital health data expert with 10+ years experience in software development, 4+ years in FHIR & clinical data services",
   },
   {
     name: "Md Jahid Iqbal",
     role: "Co-Founder & Manager",
+    email: "jahid@bisharod.com",
     bio: "Specialists in CQL authoring, quality measures, and HEDIS compliance.",
   },
 ];
@@ -143,8 +145,8 @@ export function AboutPage() {
         <h2 className="font-display text-3xl text-bisharod-navy text-center mb-12">
           The people behind Bisharod
         </h2>
-        <div className="grid sm:grid-cols-3 gap-6">
-          {TEAM.map(({ name, role, bio }) => (
+        <div className="grid sm:grid-cols-2 gap-6">
+          {TEAM.map(({ name, role, email, bio }) => (
             <div
               key={name}
               className="bg-bisharod-mist border border-gray-100 rounded-xl p-6"
@@ -158,6 +160,10 @@ export function AboutPage() {
               <p className="text-bisharod-teal text-xs font-semibold uppercase tracking-widest mb-3">
                 {role}
               </p>
+
+              {/* Email */}
+              <p className="text-sm text-bisharod-teal mb-3">{email}</p>
+
               <p className="text-bisharod-navy/50 text-sm leading-relaxed">
                 {bio}
               </p>
