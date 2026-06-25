@@ -52,6 +52,7 @@ export function Footer() {
             7533 S Center View Ct Ste N<br />
             West Jordan, UT 84084
           </p>
+          <p>admin@bisharod.com</p>
 
           <p>Phone: 385-363-3541</p>
         </div>

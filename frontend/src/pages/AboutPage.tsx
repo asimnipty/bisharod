@@ -11,7 +11,7 @@ const TEAM = [
     name: "Md Jahid Iqbal",
     role: "Co-Founder & Manager",
     email: "jahid@bisharod.com",
-    bio: "Specialists in CQL authoring, quality measures, and HEDIS compliance.",
+    bio: "Results-driven Technical Manager with 15+ years of experience ",
   },
 ];
 
