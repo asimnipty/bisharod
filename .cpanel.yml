@@ -1,4 +1,10 @@
+# ---
+# deployment:
+#   tasks:
+#     - /bin/cp -r * /home/bisharod/public_html/
+
 ---
 deployment:
   tasks:
-    - /bin/cp -r * /home/bisharod/public_html/
+    - export DEPLOYPATH=/home/bisharod/live/
+    - /bin/cp -r * $DEPLOYPATH
